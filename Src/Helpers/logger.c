@@ -64,4 +64,27 @@ void log_debug(char const * const format, ...)
     va_end(args);
 }
 
-
+/** \brief Log the content of an array.
+ * \param label The label of the array.
+ * \param array Pointer to the array.
+ * \param len The length of data in bytes.
+ */
+void log_debug_array(char const * const label, void const *array, uint16_t const len)
+{
+    if (LOG_LEVEL_DEBUG > system_log_level)
+        return;
+        
+	printf("[%s] %s[%d]: {", _get_log_level_string(LOG_LEVEL_DEBUG), label, len);
+    for (uint16_t i = 0; i < len; i++)
+    {
+    	uint8_t val = *((uint8_t *)(array + i));
+    	printf("0x%02X", val);
+    	
+    	// Add ", " after all elements except the last one.
+    	if (i < len - 1)
+    	{
+    	    printf(", ");
+    	}
+    }
+	printf("}\n");
+}
