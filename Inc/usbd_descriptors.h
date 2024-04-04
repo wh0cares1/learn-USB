@@ -57,6 +57,47 @@ typedef struct {
 	UsbEndpointDescriptor usb_mouse_endpoint_descriptor;
 } UsbConfigurationDescriptorCombination;
 
+const UsbConfigurationDescriptorCombination configuration_descriptor_combination = {
+	.usb_configuration_descriptor = {
+		.bLength                = sizeof(UsbConfigurationDescriptor),
+		.bDescriptorType        = USB_DESCRIPTOR_TYPE_CONFIGURATION,
+		.wTotalLength           = sizeof(UsbConfigurationDescriptorCombination),
+		.bNumInterfaces         = 1,
+		.bConfigurationValue    = 1,
+		.iConfiguration         = 0,
+		.bmAttributes           = 0x80 | 0x40,
+		.bMaxPower              = 25
+	},
+	.usb_interface_descriptor = {
+		.bLength                = sizeof(UsbInterfaceDescriptor),
+		.bDescriptorType        = USB_DESCRIPTOR_TYPE_INTERFACE,
+		.bInterfaceNumber       = 1,
+		.bAlternateSetting      = 0,
+		.bNumEndpoints          = 1,
+		.bInterfaceClass        = USB_CLASS_HID,
+		.bInterfaceSubClass     = USB_PROTOCOL_NONE,
+		.bInterfaceProtocol     = USB_PROTOCOL_NONE,
+		.iInterface             = 0
+	},
+    .usb_mouse_endpoint_descriptor = {
+        .bLength                = sizeof(UsbEndpointDescriptor),
+        .bDescriptorType        = USB_DESCRIPTOR_TYPE_ENDPOINT,
+        .bEndpointAddress       = 0x83,
+        .bmAttributes           = USB_ENDPOINT_TYPE_INTERRUPT,
+        .wMaxPacketSize         = 64,
+        .bInterval              = 50
+    },
+    .usb_mouse_hid_descriptor = {
+        .bLength                = sizeof(UsbHidDescriptor),
+        .bDescriptorType        = USB_DESCRIPTOR_TYPE_HID,
+        .bcdHID                 = 0x0100,
+        .bCountryCode           = USB_HID_COUNTRY_NONE,
+        .bNumDescriptors        = 1,
+        .bDescriptorType0       = USB_DESCRIPTOR_TYPE_HID_REPORT,
+        .wDescriptorLength0     = sizeof(hid_report_descriptor)
+    }
+};
+
 typedef struct {
 	int8_t      x;
 	int8_t      y;
