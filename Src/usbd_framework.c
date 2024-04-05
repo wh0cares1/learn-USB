@@ -143,4 +143,51 @@ static void process_request()
 	}
 }
 
+static void process_control_transfer_stage()
+{
+	switch(usbd_handle->control_transfer_stage)
+	{
+	case USB_CONTROL_STAGE_SETUP:
+		break;
+	case USB_CONTROL_STAGE_DATA_IN:
+		log_info("Processing IN-DATA stage.");
+
+		uint8_t data_size = MIN(usbd_handle->in_data_size, device_descriptor.bMaxPacketSize0);
+
+        usb_driver.write_packet(0, usbd_handle->ptr_in_buffer, data_size);
+        usbd_handle->in_data_size -= data_size;
+        usbd_handle->ptr_in_buffer += data_size;
+
+		log_info("Switching control stage to IN-DATA IDLE.");
+        usbd_handle->control_transfer_stage = USB_CONTROL_STAGE_DATA_IN_IDLE;
+
+        if (usbd_handle->in_data_size == 0)
+        {
+        	if (data_size == device_descriptor.bMaxPacketSize0)
+        	{
+        		log_info("Switching control stage to IN-DATA ZERO.");
+        		usbd_handle->control_transfer_stage = USB_CONTROL_STAGE_DATA_IN_ZERO;
+        	}
+        	else
+        	{
+        		log_info("Switching control stage to OUT-STATUS.");
+        		usbd_handle->control_transfer_stage = USB_CONTROL_STAGE_STATUS_OUT;
+        	}
+        }
+
+		break;
+	case USB_CONTROL_STAGE_DATA_IN_IDLE:
+		break;
+	case USB_CONTROL_STAGE_STATUS_OUT:
+		log_info("Switching control stage to SETUP.");
+		usbd_handle->control_transfer_stage = USB_CONTROL_STAGE_SETUP;
+		break;
+	case USB_CONTROL_STAGE_STATUS_IN:
+		usb_driver.write_packet(0, NULL, 0);
+		log_info("Switching control transfer stage to SETUP.");
+		usbd_handle->control_transfer_stage = USB_CONTROL_STAGE_SETUP;
+		break;
+	}
+}
+
 
