@@ -32,4 +32,19 @@ static void usb_reset_received_handler()
 	usb_driver.set_device_address(0);
 }
 
+void usbd_configure()
+{
+	usb_driver.configure_in_endpoint(
+		(configuration_descriptor_combination.usb_mouse_endpoint_descriptor.bEndpointAddress & 0x0F),
+		(configuration_descriptor_combination.usb_mouse_endpoint_descriptor.bmAttributes & 0x03),
+		configuration_descriptor_combination.usb_mouse_endpoint_descriptor.wMaxPacketSize
+	);
+
+	usb_driver.write_packet(
+		(configuration_descriptor_combination.usb_mouse_endpoint_descriptor.bEndpointAddress & 0x0F),
+		NULL,
+		0
+	);
+}
+
 
