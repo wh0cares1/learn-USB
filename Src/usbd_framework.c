@@ -190,4 +190,48 @@ static void process_control_transfer_stage()
 	}
 }
 
+static void usb_polled_handler()
+{
+	process_control_transfer_stage();
+}
+
+static void write_mouse_report()
+{
+	log_debug("Sending USB HID mouse report.");
+
+	HidReport hid_report = {
+		.x = 5
+	};
+
+    usb_driver.write_packet(
+		(configuration_descriptor_combination.usb_mouse_endpoint_descriptor.bEndpointAddress & 0x0F),
+		&hid_report,
+		sizeof(hid_report)
+	);
+}
+
+static void in_transfer_completed_handler(uint8_t endpoint_number)
+{
+	if (usbd_handle->in_data_size)
+	{
+		log_info("Switching control stage to IN-DATA.");
+		usbd_handle->control_transfer_stage = USB_CONTROL_STAGE_DATA_IN;
+	}
+	else if (usbd_handle->control_transfer_stage == USB_CONTROL_STAGE_DATA_IN_ZERO)
+	{
+		usb_driver.write_packet(0, NULL, 0);
+		log_info("Switching control stage to OUT-STATUS.");
+		usbd_handle->control_transfer_stage = USB_CONTROL_STAGE_STATUS_OUT;
+	}
+
+	if (endpoint_number == (configuration_descriptor_combination.usb_mouse_endpoint_descriptor.bEndpointAddress & 0x0F))
+	{
+		write_mouse_report();
+	}
+}
+
+static void out_transfer_completed_handler(uint8_t endpoint_number)
+{
+}
+
 
