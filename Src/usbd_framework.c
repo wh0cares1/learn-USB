@@ -244,4 +244,10 @@ static void setup_data_received_handler(uint8_t endpoint_number, uint16_t byte_c
 	process_request();
 }
 
-
+UsbEvents usb_events = {
+	.on_usb_reset_received = &usb_reset_received_handler,
+	.on_setup_data_received = &setup_data_received_handler,
+	.on_usb_polled = &usb_polled_handler,
+	.on_in_transfer_completed = &in_transfer_completed_handler,
+	.on_out_transfer_completed = &out_transfer_completed_handler
+};
