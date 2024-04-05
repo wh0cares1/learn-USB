@@ -234,4 +234,14 @@ static void out_transfer_completed_handler(uint8_t endpoint_number)
 {
 }
 
+static void setup_data_received_handler(uint8_t endpoint_number, uint16_t byte_count)
+{
+	usb_driver.read_packet(usbd_handle->ptr_out_buffer, byte_count);
+	
+	// Prints out the received data.
+	log_debug_array("SETUP data: ", usbd_handle->ptr_out_buffer, byte_count);
+
+	process_request();
+}
+
 
