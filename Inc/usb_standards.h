@@ -149,4 +149,16 @@ typedef struct {
 	uint8_t  bNumConfigurations; /**<\brief Total number of configurations supported by the USB device.*/
 } __attribute__((__packed__)) UsbDeviceDescriptor;
 
+/** \brief USB configuration descriptor. */
+typedef struct {
+	uint8_t  bLength; /**<\brief Size of the descriptor (in bytes).*/
+	uint8_t  bDescriptorType; /**<\brief \ref USB_DESCRIPTOR_TYPE_CONFIGURATION descriptor.*/
+	uint16_t wTotalLength; /**<\brief Size of the configuration descriptor header, and all sub descriptors attached to the configuration.*/
+	uint8_t  bNumInterfaces; /**<\brief Total number of interfaces in the configuration.*/
+	uint8_t  bConfigurationValue; /**<\brief Configuration index of the current configuration descriptor.*/
+	uint8_t  iConfiguration; /**<\brief Index of a string descriptor describing this configuration.*/
+	uint8_t  bmAttributes; /**<\brief Configuration attributes: Self Powered and Remote Wake up.*/
+	uint8_t  bMaxPower; /**<\brief Maximum power consumption of the device.*/
+} __attribute__((__packed__)) UsbConfigurationDescriptor;
+
 
