@@ -131,4 +131,22 @@ typedef struct
 #define USB_PROTOCOL_VENDOR 0xFF /**<\brief Vendor specific protocol.*/
 /** @} */
 
+/**\brief USB device descriptor. */
+typedef struct {
+	uint8_t  bLength; /**<\brief Size of the descriptor (in bytes).*/
+	uint8_t  bDescriptorType; /**<\brief \ref USB_DESCRIPTOR_TYPE_DEVICE device descriptor.*/
+	uint16_t bcdUSB; /**<\brief USB specification release number.*/
+	uint8_t  bDeviceClass; /**<\brief USB device class.*/
+	uint8_t  bDeviceSubClass; /**<\brief USB device subclass.*/
+	uint8_t  bDeviceProtocol; /**<\brief USB device protocol.*/
+	uint8_t  bMaxPacketSize0; /**<\brief Max packet size for the control endpoint 0 (8, 16, 32 or 64 bytes).*/
+	uint16_t idVendor; /**<\brief Vendor ID for the USB device.*/
+	uint16_t idProduct; /**<\brief Product ID for the USB device.*/
+	uint16_t bcdDevice; /**<\brief Device release number.*/
+	uint8_t  iManufacturer; /**<\brief String descriptor index for the manufacturer's name.*/
+	uint8_t  iProduct; /**<\brief String descriptor index for the product name.*/
+	uint8_t  iSerialNumber; /**<\brief String descriptor index for the product serial number.*/
+	uint8_t  bNumConfigurations; /**<\brief Total number of configurations supported by the USB device.*/
+} __attribute__((__packed__)) UsbDeviceDescriptor;
+
 
