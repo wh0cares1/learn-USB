@@ -184,6 +184,12 @@ typedef struct {
 	uint8_t  bInterval; /**<\brief Polling interval of the endpoint (frames). */
 } __attribute__((__packed__)) UsbEndpointDescriptor;
 
-
+/** \anchor USB_ENDPOINT_BMATTRIBUTES_TYPE
+ * @{ */
+#define USB_ENDPOINT_TYPE_CONTROL 0x00 /**<\brief Control endpoint.*/
+#define USB_ENDPOINT_TYPE_ISOCHRONUS 0x01 /**<\brief Isochronous endpoint.*/
+#define USB_ENDPOINT_TYPE_BULK 0x02 /**<\brief Bulk endpoint.*/
+#define USB_ENDPOINT_TYPE_INTERRUPT 0x03 /**<\brief Interrupt endpoint.*/
+/** @} */
 
 #endif /* USB_STANDARDS_H_ */
