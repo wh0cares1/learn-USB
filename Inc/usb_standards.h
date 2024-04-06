@@ -174,4 +174,16 @@ typedef struct {
 	uint8_t iInterface; /**<\brief Index of the string descriptor describing the interface. */
 } __attribute__((__packed__)) UsbInterfaceDescriptor;
 
+/**\brief USB endpoint descriptor. */
+typedef struct {
+	uint8_t  bLength; /**<\brief Size of the descriptor, in bytes. */
+	uint8_t  bDescriptorType; /**<\brief Endpoint descriptor. */
+	uint8_t  bEndpointAddress; /**<\brief Logical address of the endpoint including direction mask. */
+	uint8_t  bmAttributes; /**<\brief Endpoint attributes, \ref USB_ENDPOINT_BMATTRIBUTES_TYPE. */
+	uint16_t wMaxPacketSize; /**<\brief Maximum packet size of the endpoint */
+	uint8_t  bInterval; /**<\brief Polling interval of the endpoint (frames). */
+} __attribute__((__packed__)) UsbEndpointDescriptor;
 
+
+
+#endif /* USB_STANDARDS_H_ */
