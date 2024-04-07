@@ -151,4 +151,32 @@ static void write_packet(uint8_t endpoint_number, void const *buffer, uint16_t s
 	}
 }
 
+/** \brief Updates the start addresses of all FIFOs according to the size of each FIFO.
+ */
+static void refresh_fifo_start_addresses()
+{
+	// The first changeable start address begins after the region of RxFIFO.
+	uint16_t start_address = _FLD2VAL(USB_OTG_GRXFSIZ_RXFD, USB_OTG_HS->GRXFSIZ) * 4;
+
+	// Updates the start address of the TxFIFO0.
+	MODIFY_REG(USB_OTG_HS->DIEPTXF0_HNPTXFSIZ,
+		USB_OTG_TX0FSA,
+		_VAL2FLD(USB_OTG_TX0FSA, start_address)
+	);
+
+	// The next start address is after where the last TxFIFO ends.
+	start_address += _FLD2VAL(USB_OTG_TX0FD, USB_OTG_HS->DIEPTXF0_HNPTXFSIZ) * 4;
+
+	// Updates the start addresses of the rest TxFIFOs.
+	for (uint8_t txfifo_number = 0; txfifo_number < ENDPOINT_COUNT - 1; txfifo_number++)
+	{
+		MODIFY_REG(USB_OTG_HS->DIEPTXF[txfifo_number],
+			USB_OTG_NPTXFSA,
+			_VAL2FLD(USB_OTG_NPTXFSA, start_address)
+		);
+
+		start_address += _FLD2VAL(USB_OTG_NPTXFD, USB_OTG_HS->DIEPTXF[txfifo_number]) * 4;
+	}
+}
+
 
