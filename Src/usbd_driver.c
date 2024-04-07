@@ -407,4 +407,44 @@ static void oepint_handler()
     }
 }
 
+/** \brief Handles the USB core interrupts.
+ */
+static void gintsts_handler()
+{
+	volatile uint32_t gintsts = USB_OTG_HS_GLOBAL->GINTSTS;
+
+	if (gintsts & USB_OTG_GINTSTS_USBRST)
+	{
+		usbrst_handler();
+		// Clears the interrupt.
+		SET_BIT(USB_OTG_HS_GLOBAL->GINTSTS, USB_OTG_GINTSTS_USBRST);
+	}
+	else if (gintsts & USB_OTG_GINTSTS_ENUMDNE)
+	{
+		enumdne_handler();
+		// Clears the interrupt.
+		SET_BIT(USB_OTG_HS_GLOBAL->GINTSTS, USB_OTG_GINTSTS_ENUMDNE);
+	}
+	else if (gintsts & USB_OTG_GINTSTS_RXFLVL)
+	{
+		rxflvl_handler();
+		// Clears the interrupt.
+		SET_BIT(USB_OTG_HS_GLOBAL->GINTSTS, USB_OTG_GINTSTS_RXFLVL);
+	}
+	else if (gintsts & USB_OTG_GINTSTS_IEPINT)
+	{
+		iepint_handler();
+		// Clears the interrupt.
+		SET_BIT(USB_OTG_HS_GLOBAL->GINTSTS, USB_OTG_GINTSTS_IEPINT);
+	}
+	else if (gintsts & USB_OTG_GINTSTS_OEPINT)
+	{
+		oepint_handler();
+		// Clears the interrupt.
+		SET_BIT(USB_OTG_HS_GLOBAL->GINTSTS, USB_OTG_GINTSTS_OEPINT);
+	}
+
+	usb_events.on_usb_polled();
+}
+
 
