@@ -179,4 +179,22 @@ static void refresh_fifo_start_addresses()
 	}
 }
 
+/** \brief Configures the RxFIFO of all OUT endpoints.
+ * \param size The size of the largest OUT endpoint in bytes.
+ * \note The RxFIFO is shared between all OUT endpoints.
+ */
+static void configure_rxfifo_size(uint16_t size)
+{
+	// Considers the space required to save status packets in RxFIFO and gets the size in term of 32-bit words.
+	size = 10 + (2 * ((size / 4) + 1));
+
+	// Configures the depth of the FIFO.
+	MODIFY_REG(USB_OTG_HS->GRXFSIZ,
+		USB_OTG_GRXFSIZ_RXFD,
+		_VAL2FLD(USB_OTG_GRXFSIZ_RXFD, size)
+	);
+
+	refresh_fifo_start_addresses();
+}
+
 
