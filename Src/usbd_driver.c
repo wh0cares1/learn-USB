@@ -233,4 +233,53 @@ static void flush_rxfifo()
 	SET_BIT(USB_OTG_HS->GRSTCTL, USB_OTG_GRSTCTL_RXFFLSH);
 }
 
+/** \brief Flushes the TxFIFO of an IN endpoint.
+ * \param endpoint_number The number of an IN endpoint to flush its TxFIFO.
+ */
+static void flush_txfifo(uint8_t endpoint_number)
+{
+	// Sets the number of the TxFIFO to be flushed and then triggers the flush.
+	MODIFY_REG(USB_OTG_HS->GRSTCTL,
+		USB_OTG_GRSTCTL_TXFNUM,
+		_VAL2FLD(USB_OTG_GRSTCTL_TXFNUM, endpoint_number) | USB_OTG_GRSTCTL_TXFFLSH
+	);
+}
+
+static void configure_endpoint0(uint8_t endpoint_size)
+{
+	// Unmasks all interrupts of IN and OUT endpoint0.
+	SET_BIT(USB_OTG_HS_DEVICE->DAINTMSK, 1 << 0 | 1 << 16);
+
+	// Configures the maximum packet size, activates the endpoint, and NAK the endpoint (cannot send data yet).
+	MODIFY_REG(IN_ENDPOINT(0)->DIEPCTL,
+		USB_OTG_DIEPCTL_MPSIZ,
+		USB_OTG_DIEPCTL_USBAEP | _VAL2FLD(USB_OTG_DIEPCTL_MPSIZ, endpoint_size) | USB_OTG_DIEPCTL_SNAK
+	);
+
+	// Clears NAK, and enables endpoint data transmission.
+	SET_BIT(OUT_ENDPOINT(0)->DOEPCTL,
+		USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK
+	);
+
+	// Note: 64 bytes is the maximum packet size for full speed USB devices.
+	configure_rxfifo_size(64);
+	configure_txfifo_size(0, endpoint_size);
+}
+
+static void configure_in_endpoint(uint8_t endpoint_number, UsbEndpointType endpoint_type, uint16_t endpoint_size)
+{
+	// Unmasks all interrupts of the targeted IN endpoint.
+	SET_BIT(USB_OTG_HS_DEVICE->DAINTMSK, 1 << endpoint_number);
+
+	// Activates the endpoint, sets endpoint handshake to NAK (not ready to send data), sets DATA0 packet identifier,
+	// configures its type, its maximum packet size, and assigns it a TxFIFO.
+	MODIFY_REG(IN_ENDPOINT(endpoint_number)->DIEPCTL,
+		USB_OTG_DIEPCTL_MPSIZ | USB_OTG_DIEPCTL_EPTYP | USB_OTG_DIEPCTL_TXFNUM,
+		USB_OTG_DIEPCTL_USBAEP | _VAL2FLD(USB_OTG_DIEPCTL_MPSIZ, endpoint_size) | USB_OTG_DIEPCTL_SNAK |
+		_VAL2FLD(USB_OTG_DIEPCTL_EPTYP, endpoint_type) | _VAL2FLD(USB_OTG_DIEPCTL_TXFNUM, endpoint_number) | USB_OTG_DIEPCTL_SD0PID_SEVNFRM
+	);
+
+	configure_txfifo_size(endpoint_number, endpoint_size);
+}
+
 
