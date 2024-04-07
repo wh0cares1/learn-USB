@@ -344,4 +344,52 @@ static void enumdne_handler()
 	configure_endpoint0(8);
 }
 
+static void rxflvl_handler()
+{
+	 // Pops the status information word from the RxFIFO.
+	uint32_t receive_status = USB_OTG_HS_GLOBAL->GRXSTSP;
+
+	// The endpoint that received the data.
+	uint8_t endpoint_number = _FLD2VAL(USB_OTG_GRXSTSP_EPNUM, receive_status);
+	// The count of bytes in the received packet.
+	uint16_t bcnt = _FLD2VAL(USB_OTG_GRXSTSP_BCNT, receive_status);
+	// The status of the received packet.
+	uint16_t pktsts = _FLD2VAL(USB_OTG_GRXSTSP_PKTSTS, receive_status);
+
+	switch (pktsts)
+	{
+	case 0x06: // SETUP packet (includes data).
+    	usb_events.on_setup_data_received(endpoint_number, bcnt);
+    	break;
+    case 0x02: // OUT packet (includes data).
+    	// ToDo
+		break;
+    case 0x04: // SETUP stage has completed.
+    	// Re-enables the transmission on the endpoint.
+        SET_BIT(OUT_ENDPOINT(endpoint_number)->DOEPCTL,
+			USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
+    	break;
+    case 0x03: // OUT transfer has completed.
+    	// Re-enables the transmission on the endpoint.
+        SET_BIT(OUT_ENDPOINT(endpoint_number)->DOEPCTL,
+			USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
+    	break;
+	}
+}
+
+/** \brief Handles the interrupt raised when an IN endpoint has a raised interrupt.
+ */
+static void iepint_handler()
+{
+	// Finds the endpoint caused the interrupt.
+	uint8_t endpoint_number = ffs(USB_OTG_HS_DEVICE->DAINT) - 1;
+
+    if (IN_ENDPOINT(endpoint_number)->DIEPINT & USB_OTG_DIEPINT_XFRC)
+    {
+        usb_events.on_in_transfer_completed(endpoint_number);
+        // Clears the interrupt flag.
+        SET_BIT(IN_ENDPOINT(endpoint_number)->DIEPINT, USB_OTG_DIEPINT_XFRC);
+    }
+}
+
 
