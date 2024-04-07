@@ -326,4 +326,22 @@ static void deconfigure_endpoint(uint8_t endpoint_number)
 	flush_rxfifo();
 }
 
+static void usbrst_handler()
+{
+	log_info("USB reset signal was detected.");
+
+	for (uint8_t i = 0; i <= ENDPOINT_COUNT; i++)
+	{
+		deconfigure_endpoint(i);
+	}
+
+	usb_events.on_usb_reset_received();
+}
+
+static void enumdne_handler()
+{
+	log_info("USB device speed enumeration done.");
+	configure_endpoint0(8);
+}
+
 
