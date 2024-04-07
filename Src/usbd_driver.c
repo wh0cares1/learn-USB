@@ -119,4 +119,36 @@ static void read_packet(void *buffer, uint16_t size)
 	}
 }
 
+/** \brief Pushes a packet into the TxFIFO of an IN endpoint.
+ * \param endpoint_number The number of the endpoint, to which the data will be written.
+ * \param buffer Pointer to the buffer contains the data to be written to the endpoint.
+ * \param size The size of data to be written in bytes.
+ */
+static void write_packet(uint8_t endpoint_number, void const *buffer, uint16_t size)
+{
+	uint32_t *fifo = FIFO(endpoint_number);
+	USB_OTG_INEndpointTypeDef *in_endpoint = IN_ENDPOINT(endpoint_number);
+
+	// Configures the transmission (1 packet that has `size` bytes).
+	MODIFY_REG(in_endpoint->DIEPTSIZ,
+		USB_OTG_DIEPTSIZ_PKTCNT | USB_OTG_DIEPTSIZ_XFRSIZ,
+		_VAL2FLD(USB_OTG_DIEPTSIZ_PKTCNT, 1) | _VAL2FLD(USB_OTG_DIEPTSIZ_XFRSIZ, size)
+	);
+
+	// Enables the transmission after clearing both STALL and NAK of the endpoint.
+	MODIFY_REG(in_endpoint->DIEPCTL,
+		USB_OTG_DIEPCTL_STALL,
+		USB_OTG_DIEPCTL_CNAK | USB_OTG_DIEPCTL_EPENA
+	);
+
+	// Gets the size in term of 32-bit words (to avoid integer overflow in the loop).
+	size = (size + 3) / 4;
+
+	for (; size > 0; size--, buffer += 4)
+	{
+		// Pushes the data to the TxFIFO.
+		*fifo = *((uint32_t *)buffer);
+	}
+}
+
 
