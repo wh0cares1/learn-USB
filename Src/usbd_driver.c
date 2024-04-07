@@ -447,4 +447,16 @@ static void gintsts_handler()
 	usb_events.on_usb_polled();
 }
 
-
+const UsbDriver usb_driver = {
+	.initialize_core = &initialize_core,
+	.initialize_gpio_pins = &initialize_gpio_pins,
+	.set_device_address = &set_device_address,
+	.connect = &connect,
+	.disconnect = &disconnect,
+	.flush_rxfifo = &flush_rxfifo,
+	.flush_txfifo = &flush_txfifo,
+	.configure_in_endpoint = &configure_in_endpoint,
+	.read_packet = &read_packet,
+	.write_packet = &write_packet,
+	.poll = &gintsts_handler
+};
