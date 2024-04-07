@@ -58,4 +58,24 @@ static void initialize_core()
 	SET_BIT(USB_OTG_HS_DEVICE->DIEPMSK, USB_OTG_DIEPMSK_XFRCM);
 }
 
+static void set_device_address(uint8_t address)
+{
+    MODIFY_REG(
+		USB_OTG_HS_DEVICE->DCFG,
+		USB_OTG_DCFG_DAD,
+		_VAL2FLD(USB_OTG_DCFG_DAD, address)
+	);
+}
+
+/** \brief Connects the USB device to the bus.
+ */
+static void connect()
+{
+	// Powers the transceivers on.
+    SET_BIT(USB_OTG_HS->GCCFG, USB_OTG_GCCFG_PWRDWN);
+
+	// Connects the device to the bus.
+    CLEAR_BIT(USB_OTG_HS_DEVICE->DCTL, USB_OTG_DCTL_SDIS);
+}
+
 
