@@ -282,4 +282,48 @@ static void configure_in_endpoint(uint8_t endpoint_number, UsbEndpointType endpo
 	configure_txfifo_size(endpoint_number, endpoint_size);
 }
 
+/** \brief Deconfigures IN and OUT endpoints of a specific endpoint number.
+ * \param endpoint_number The number of the IN and OUT endpoints to deconfigure.
+ */
+static void deconfigure_endpoint(uint8_t endpoint_number)
+{
+    USB_OTG_INEndpointTypeDef *in_endpoint = IN_ENDPOINT(endpoint_number);
+    USB_OTG_OUTEndpointTypeDef *out_endpoint = OUT_ENDPOINT(endpoint_number);
+
+	// Masks all interrupts of the targeted IN and OUT endpoints.
+	CLEAR_BIT(USB_OTG_HS_DEVICE->DAINTMSK,
+		(1 << endpoint_number) | (1 << 16 << endpoint_number)
+	);
+
+	// Clears all interrupts of the endpoint.
+	SET_BIT(in_endpoint->DIEPINT, 0x29FF);
+    SET_BIT(out_endpoint->DOEPINT, 0x71FF);
+
+	// Disables the endpoints if possible.
+    if (in_endpoint->DIEPCTL & USB_OTG_DIEPCTL_EPENA)
+    {
+		// Disables endpoint transmission.
+		SET_BIT(in_endpoint->DIEPCTL, USB_OTG_DIEPCTL_EPDIS);
+    }
+
+	// Deactivates the endpoint.
+	CLEAR_BIT(in_endpoint->DIEPCTL, USB_OTG_DIEPCTL_USBAEP);
+
+    if (endpoint_number != 0)
+    {
+		if (out_endpoint->DOEPCTL & USB_OTG_DOEPCTL_EPENA)
+		{
+			// Disables endpoint transmission.
+			SET_BIT(out_endpoint->DOEPCTL, USB_OTG_DOEPCTL_EPDIS);
+		}
+
+		// Deactivates the endpoint.
+		CLEAR_BIT(out_endpoint->DOEPCTL, USB_OTG_DOEPCTL_USBAEP);
+    }
+
+	// Flushes the FIFOs.
+	flush_txfifo(endpoint_number);
+	flush_rxfifo();
+}
+
 
