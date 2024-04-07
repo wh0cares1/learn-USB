@@ -197,4 +197,40 @@ static void configure_rxfifo_size(uint16_t size)
 	refresh_fifo_start_addresses();
 }
 
+/** \brief Configures the TxFIFO of an IN endpoint.
+ * \param endpoint_number The number of the IN endpoint we want to configure its TxFIFO
+ * \param size The size of the IN endpoint in bytes.
+ * \note Any change on any FIFO will update the the registers of all TxFIFOs to adapt the start offsets in the FIFO dedicated memory.
+ */
+static void configure_txfifo_size(uint8_t endpoint_number, uint16_t size)
+{
+	// Gets the FIFO size in term of 32-bit words.
+	size = (size + 3) / 4;
+
+	// Configures the depth of the TxFIFO.
+	if (endpoint_number == 0)
+	{
+		MODIFY_REG(USB_OTG_HS->DIEPTXF0_HNPTXFSIZ,
+			USB_OTG_TX0FD,
+			_VAL2FLD(USB_OTG_TX0FD, size)
+		);
+	}
+	else
+	{
+		MODIFY_REG(USB_OTG_HS->DIEPTXF[endpoint_number - 1],
+			USB_OTG_NPTXFD,
+			_VAL2FLD(USB_OTG_NPTXFD, size)
+		);
+	}
+
+	refresh_fifo_start_addresses();
+}
+
+/** \brief Flushes the RxFIFO of all OUT endpoints.
+ */
+static void flush_rxfifo()
+{
+	SET_BIT(USB_OTG_HS->GRSTCTL, USB_OTG_GRSTCTL_RXFFLSH);
+}
+
 
