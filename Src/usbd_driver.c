@@ -78,4 +78,45 @@ static void connect()
     CLEAR_BIT(USB_OTG_HS_DEVICE->DCTL, USB_OTG_DCTL_SDIS);
 }
 
+/** \brief Disconnects the USB device from the bus.
+ */
+static void disconnect()
+{
+	// Disconnects the device from the bus.
+	SET_BIT(USB_OTG_HS_DEVICE->DCTL, USB_OTG_DCTL_SDIS);
+
+	// Powers the transceivers off.
+	CLEAR_BIT(USB_OTG_HS->GCCFG, USB_OTG_GCCFG_PWRDWN);
+}
+
+/** \brief Pops data from the RxFIFO and stores it in the buffer.
+ * \param buffer Pointer to the buffer, in which the popped data will be stored.
+ * \param size Count of bytes to be popped from the dedicated RxFIFO memory.
+ */
+static void read_packet(void *buffer, uint16_t size)
+{
+	// Note: There is only one RxFIFO.
+	uint32_t *fifo = FIFO(0);
+
+	for (; size >= 4; size -=4, buffer += 4)
+	{
+		// Pops one 32-bit word of data (until there is less than one word remaining).
+		uint32_t data = *fifo;
+		// Stores the data in the buffer.
+		*((uint32_t*)buffer) = data;
+	}
+
+	if (size > 0)
+	{
+		// Pops the last remaining bytes (which are less than one word).
+		uint32_t data = *fifo;
+
+		for(; size > 0; size--, buffer++, data >>= 8)
+		{
+			// Stores the data in the buffer with the correct alignment.
+			*((uint8_t*)buffer) = 0xFF & data;
+		}
+	}
+}
+
 
