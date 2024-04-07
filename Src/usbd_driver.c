@@ -392,4 +392,19 @@ static void iepint_handler()
     }
 }
 
+/** \brief Handles the interrupt raised when an OUT endpoint has a raised interrupt.
+ */
+static void oepint_handler()
+{
+	// Finds the endpoint caused the interrupt.
+	uint8_t endpoint_number = ffs(USB_OTG_HS_DEVICE->DAINT >> 16) - 1;
+
+    if (OUT_ENDPOINT(endpoint_number)->DOEPINT & USB_OTG_DOEPINT_XFRC)
+    {
+        usb_events.on_out_transfer_completed(endpoint_number);
+        // Clears the interrupt;
+        SET_BIT(OUT_ENDPOINT(endpoint_number)->DOEPINT, USB_OTG_DOEPINT_XFRC);
+    }
+}
+
 
